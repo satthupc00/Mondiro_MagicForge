@@ -97,6 +97,10 @@ export class NodeEditor {
     if (e && imageData) e.ctx.putImageData(imageData, 0, 0);
   }
 
+  setLocked(id) {
+    for (const [nid, e] of this.els) e.el.classList.toggle('locked', nid === id);
+  }
+
   refreshSelection() {
     for (const [id, e] of this.els) e.el.classList.toggle('selected', this.selected.has(id));
     this.drawWires();

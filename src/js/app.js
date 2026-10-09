@@ -18,6 +18,7 @@ const state = {
   playing: true,
   viewMode: 'selected',
   viewNode: 'output',
+  lockNode: null,
   selected: null,
   bg: 0,
   dirty: false,
@@ -64,10 +65,16 @@ const editor = new NodeEditor($('#graph-area'), {
     if (state.viewMode === 'selected' && id) state.viewNode = id;
     requestRender();
   },
-  onView(id) { setViewMode('selected'); state.viewNode = id; requestRender(); },
+  onView(id) {
+    setViewMode('selected', true);
+    state.viewNode = id;
+    if (state.lockNode) setLock(id);
+    requestRender();
+  },
   onRemoved(id) {
     engine.dropNode(id);
     if (state.viewNode === id) state.viewNode = 'output';
+    if (state.lockNode === id) setLock(null);
   },
 });
 
@@ -128,6 +135,8 @@ function applySnapshot(s) {
   if (keepSel && state.graph.nodes.has(keepSel)) editor.select([keepSel], keepSel);
   else editor.select([]);
   if (!state.graph.nodes.has(state.viewNode)) state.viewNode = 'output';
+  if (state.lockNode && !state.graph.nodes.has(state.lockNode)) setLock(null);
+  else editor.setLocked(state.lockNode);
   markDirty();
   requestRender();
 }
@@ -146,6 +155,7 @@ async function loadGraphData(data, fileName, filePath = null) {
   state.frame = 0;
   state.viewNode = 'output';
   state.selected = null;
+  setLock(null);
   syncSettingsUI();
   editor.setGraph(g);
   props.show(null);
@@ -267,7 +277,23 @@ exMenu.onclick = (e) => {
 document.addEventListener('click', () => exMenu.classList.add('hidden'));
 
 // ---------------------------------------------------------------- viewer / timeline UI
-function setViewMode(m) {
+// Preview lock: keeps the 2D view on one node while you select and edit others.
+function setLock(id) {
+  state.lockNode = id;
+  $('#btn-lock').classList.toggle('on', !!id);
+  editor.setLocked(id);
+  requestRender();
+}
+function toggleLock() {
+  const target = state.selected || state.viewNode;
+  if (state.lockNode && state.lockNode === target) { setLock(null); return; }
+  setViewMode('selected', true);
+  setLock(target);
+}
+$('#btn-lock').onclick = toggleLock;
+
+function setViewMode(m, keepLock = false) {
+  if (!keepLock && state.lockNode) setLock(null);
   state.viewMode = m;
   document.querySelectorAll('#view-mode button').forEach(b => b.classList.toggle('on', b.dataset.v === m));
   state.viewNode = m === 'output' ? 'output' : (state.selected || 'output');
@@ -373,10 +399,11 @@ function renderPreview(now) {
   const [w, h] = previewSize();
   const order = state.graph.order();
   engine.render(state.graph, order, phaseOf(state.frame), w, h);
-  const vid = state.graph.nodes.has(state.viewNode) ? state.viewNode : 'output';
+  const want = state.lockNode || state.viewNode;
+  const vid = state.graph.nodes.has(want) ? want : 'output';
   engine.display(vid, state.bg);
   const vn = state.graph.nodes.get(vid);
-  $('#view-label').textContent = `${NODE_TYPES[vn.type].name} · ${state.settings.width}×${state.settings.height}${w !== state.settings.width ? ` (preview ${w}×${h})` : ''}`;
+  $('#view-label').textContent = `${state.lockNode === vid ? 'Locked: ' : ''}${NODE_TYPES[vn.type].name} · ${state.settings.width}×${state.settings.height}${w !== state.settings.width ? ` (preview ${w}×${h})` : ''}`;
   if (now - lastThumbs > 120 || !state.playing) {
     lastThumbs = now;
     for (const id of order) editor.setThumb(id, engine.thumbnail(id));
@@ -507,6 +534,7 @@ document.addEventListener('keydown', (e) => {
   else if (e.key === 'ArrowLeft') step(-1);
   else if (e.key === 'ArrowRight') step(1);
   else if (k === 'f' && !ctrl) editor.frameAll();
+  else if (k === 'l' && !ctrl) toggleLock();
   else if (e.key === 'Tab') {
     e.preventDefault();
     const r = $('#graph-area').getBoundingClientRect();

@@ -65,6 +65,11 @@ select option { background: #1b1c21; }
 .seg { display: flex; border: 1px solid var(--line); border-radius: 5px; overflow: hidden; }
 .seg button { background: #18191d; border: 0; padding: 3px 10px; cursor: pointer; }
 .seg button.on { background: var(--accent); color: #fff; }
+#btn-lock { padding: 3px 7px; color: var(--dim); display: flex; align-items: center; }
+#btn-lock .shackle { transform: translate(3px, -1px); transition: transform 0.12s; }
+#btn-lock.on { background: #ffb04a; border-color: #ffb04a; color: #1b1c21; }
+#btn-lock.on .shackle { transform: none; }
+.ge-node.locked::after { content: "LOCKED"; position: absolute; top: -9px; right: 6px; padding: 0 5px; font-size: 8.5px; font-weight: 700; letter-spacing: 0.5px; color: #1b1c21; background: #ffb04a; border-radius: 3px; line-height: 14px; }
 #viewer { height: 360px; background: #0e0f12; position: relative; }
 #view-canvas { width: 100%; height: 100%; display: block; }
 

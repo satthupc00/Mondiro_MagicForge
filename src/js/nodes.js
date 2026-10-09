@@ -176,8 +176,11 @@ vec4 process(vec2 uv) {
   shape: {
     name: 'Shape', category: 'Generators', inputs: [],
     params: [
-      { id: 'shape', label: 'Shape', type: 'enum', options: ['Circle', 'Ring', 'Square', 'Polygon', 'Star', 'Cross'], def: 0 },
-      { id: 'size', label: 'Size', type: 'float', min: 0, max: 1.5, def: 0.6 },
+      { id: 'shape', label: 'Shape', type: 'enum', options: ['Circle', 'Ring', 'Square', 'Polygon', 'Star', 'Cross', 'Rectangle'], def: 0 },
+      { id: 'size', label: 'Size', type: 'float', min: 0, max: 1.5, def: 0.6, showIf: { shape: [0, 1, 2, 3, 4, 5] } },
+      { id: 'width', label: 'Width', type: 'float', min: 0, max: 1.5, def: 0.8, showIf: { shape: [6] } },
+      { id: 'height', label: 'Height', type: 'float', min: 0, max: 1.5, def: 0.4, showIf: { shape: [6] } },
+      { id: 'corner', label: 'Corner Radius', type: 'float', min: 0, max: 0.5, def: 0, showIf: { shape: [6] } },
       { id: 'thickness', label: 'Thickness', type: 'float', min: 0.005, max: 1, def: 0.15, showIf: { shape: [1, 5] } },
       { id: 'sides', label: 'Sides / Points', type: 'int', min: 3, max: 16, def: 5, showIf: { shape: [3, 4] } },
       { id: 'inner', label: 'Inner Radius', type: 'float', min: 0, max: 1, def: 0.4, showIf: { shape: [4] } },
@@ -205,9 +208,14 @@ vec4 process(vec2 uv) {
     float f = abs(mod(a + seg * 0.5, seg) - seg * 0.5) / (seg * 0.5);
     float rr = mix(r, r * p_inner, pow(f, 0.7));
     d = (length(p) - rr) * 0.7;
-  } else {
+  } else if (p_shape < 5.5) {
     float t = p_thickness * 0.25;
     d = min(sdBox(p, vec2(r, t)), sdBox(p, vec2(t, r)));
+  } else {
+    vec2 hb = vec2(p_width, p_height) * 0.5;
+    float cr = min(p_corner, min(hb.x, hb.y));
+    d = sdBox(p, hb - cr) - cr;
+    r = min(hb.x, hb.y);
   }
   float aa = 1.5 / min(u_res.x, u_res.y);
   float s = max(p_softness * 0.5, aa);
@@ -304,12 +312,16 @@ vec4 process(vec2 uv) {
       { id: 'offY', label: 'Offset Y', type: 'float', min: -1, max: 1, def: 0 },
       { id: 'rotation', label: 'Rotation', type: 'float', min: -360, max: 360, def: 0 },
       { id: 'scale', label: 'Scale', type: 'float', min: 0.01, max: 8, def: 1 },
+      { id: 'scaleX', label: 'Scale X', type: 'float', min: 0.01, max: 8, def: 1 },
+      { id: 'scaleY', label: 'Scale Y', type: 'float', min: 0.01, max: 8, def: 1 },
       { id: 'tiling', label: 'Outside Area', type: 'enum', options: ['Transparent', 'Clamp', 'Tile'], def: 0 },
       { id: 'animate', label: 'Animate Start → End', type: 'enum', options: ANIM_OPTIONS, def: 0 },
       { id: 'offXEnd', label: 'End Offset X', type: 'float', min: -1, max: 1, def: 0, showIf: { animate: [1, 2, 3, 4, 5] } },
       { id: 'offYEnd', label: 'End Offset Y', type: 'float', min: -1, max: 1, def: 0, showIf: { animate: [1, 2, 3, 4, 5] } },
       { id: 'rotationEnd', label: 'End Rotation', type: 'float', min: -360, max: 360, def: 0, showIf: { animate: [1, 2, 3, 4, 5] } },
       { id: 'scaleEnd', label: 'End Scale', type: 'float', min: 0.01, max: 8, def: 1, showIf: { animate: [1, 2, 3, 4, 5] } },
+      { id: 'scaleXEnd', label: 'End Scale X', type: 'float', min: 0.01, max: 8, def: 1, showIf: { animate: [1, 2, 3, 4, 5] } },
+      { id: 'scaleYEnd', label: 'End Scale Y', type: 'float', min: 0.01, max: 8, def: 1, showIf: { animate: [1, 2, 3, 4, 5] } },
       { id: 'spin', label: 'Spin (turns / clip)', type: 'int', min: -8, max: 8, def: 0 },
       { id: 'scrollX', label: 'Scroll X (tiles / clip)', type: 'int', min: -8, max: 8, def: 0 },
       { id: 'scrollY', label: 'Scroll Y (tiles / clip)', type: 'int', min: -8, max: 8, def: 0 },
@@ -319,7 +331,7 @@ vec4 process(vec2 uv) {
   float k = anim(p_animate, u_phase);
   vec2 off = mix(vec2(p_offX, p_offY), vec2(p_offXEnd, p_offYEnd), k);
   float r = radians(mix(p_rotation, p_rotationEnd, k)) + TAU * p_spin * u_phase;
-  float s = max(mix(p_scale, p_scaleEnd, k), 0.001);
+  vec2 s = max(mix(p_scale, p_scaleEnd, k) * mix(vec2(p_scaleX, p_scaleY), vec2(p_scaleXEnd, p_scaleYEnd), k), vec2(0.001));
   vec2 p = centered(uv) - off;
   p = rot(p, -r) / s;
   vec2 q = uncentered(p) + vec2(p_scrollX, p_scrollY) * u_phase;
@@ -385,22 +397,29 @@ vec4 process(vec2 uv) {
       { id: 'mode', label: 'Mode', type: 'enum', options: ['Mirror X', 'Mirror Y', 'Mirror XY', 'Kaleidoscope'], def: 3 },
       { id: 'segments', label: 'Segments', type: 'int', min: 2, max: 24, def: 6, showIf: { mode: [3] } },
       { id: 'flip', label: 'Use Other Side', type: 'bool', def: false },
+      { id: 'mirroredOnly', label: 'Show Mirrored Part Only', type: 'bool', def: false },
     ],
     glsl: `
 vec4 process(vec2 uv) {
+  bool copied = false;
+  vec2 q = uv;
   if (p_mode > 2.5) {
     vec2 p = centered(uv);
     float seg = TAU / p_segments;
-    float a = atan(p.y, p.x) + (p_flip > 0.5 ? seg * 0.5 : 0.0);
-    a = mod(a, seg);
-    a = abs(a - seg * 0.5);
-    return texture(u_in0, uncentered(vec2(cos(a), sin(a)) * length(p)));
+    float off = p_flip > 0.5 ? seg * 0.5 : 0.0;
+    float a0 = atan(p.y, p.x) - off;
+    float am = mod(a0, seg);
+    float a = (am <= seg * 0.5 ? am : seg - am) + off;
+    // The source wedge [0, seg/2) is left untouched; everything else is a copy.
+    copied = !(a0 >= 0.0 && a0 < seg * 0.5);
+    q = uncentered(vec2(cos(a), sin(a)) * length(p));
+  } else {
+    bool fx = p_mode < 0.5 || p_mode > 1.5;
+    bool fy = p_mode > 0.5;
+    if (fx && (p_flip > 0.5) == (q.x < 0.5)) { q.x = 1.0 - q.x; copied = true; }
+    if (fy && (p_flip > 0.5) == (q.y < 0.5)) { q.y = 1.0 - q.y; copied = true; }
   }
-  vec2 q = uv;
-  bool fx = p_mode < 0.5 || p_mode > 1.5;
-  bool fy = p_mode > 0.5;
-  if (fx) q.x = (p_flip > 0.5) == (q.x < 0.5) ? 1.0 - q.x : q.x;
-  if (fy) q.y = (p_flip > 0.5) == (q.y < 0.5) ? 1.0 - q.y : q.y;
+  if (p_mirroredOnly > 0.5 && !copied) return vec4(0.0);
   return texture(u_in0, q);
 }`,
   },

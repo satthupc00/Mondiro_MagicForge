@@ -1,0 +1,39 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" width="256" height="256">
+  <defs>
+    <radialGradient id="bg" cx="50%" cy="38%" r="75%">
+      <stop offset="0" stop-color="#3a1466"/>
+      <stop offset="0.55" stop-color="#1a0d33"/>
+      <stop offset="1" stop-color="#0b0912"/>
+    </radialGradient>
+    <radialGradient id="glow" cx="50%" cy="50%" r="50%">
+      <stop offset="0" stop-color="#ff5fd2" stop-opacity="0.95"/>
+      <stop offset="0.35" stop-color="#b63cff" stop-opacity="0.55"/>
+      <stop offset="0.7" stop-color="#ff4d5a" stop-opacity="0.18"/>
+      <stop offset="1" stop-color="#ff4d5a" stop-opacity="0"/>
+    </radialGradient>
+    <linearGradient id="steel" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#9aa0b4"/>
+      <stop offset="0.12" stop-color="#5d6275"/>
+      <stop offset="1" stop-color="#22242e"/>
+    </linearGradient>
+    <linearGradient id="star" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#ffffff"/>
+      <stop offset="1" stop-color="#ffd6f6"/>
+    </linearGradient>
+    <filter id="soft" x="-50%" y="-50%" width="200%" height="200%">
+      <feGaussianBlur stdDeviation="4"/>
+    </filter>
+  </defs>
+  <rect x="8" y="8" width="240" height="240" rx="52" fill="url(#bg)"/>
+  <rect x="8.5" y="8.5" width="239" height="239" rx="51.5" fill="none" stroke="#e5333f" stroke-opacity="0.55" stroke-width="3"/>
+  <circle cx="128" cy="96" r="92" fill="url(#glow)"/>
+  <path d="M128 26 C134 72 142 88 196 96 C142 104 134 120 128 166 C122 120 114 104 60 96 C114 88 122 72 128 26 Z" fill="#ff9bf0" filter="url(#soft)" opacity="0.9"/>
+  <path d="M128 26 C134 72 142 88 196 96 C142 104 134 120 128 166 C122 120 114 104 60 96 C114 88 122 72 128 26 Z" fill="url(#star)"/>
+  <path d="M188 40 C190 52 193 55 204 57 C193 59 190 62 188 74 C186 62 183 59 172 57 C183 55 186 52 188 40 Z" fill="#ffe7a8"/>
+  <path d="M72 54 C73 61 75 63 82 64 C75 65 73 67 72 74 C71 67 69 65 62 64 C69 63 71 61 72 54 Z" fill="#9fe8ff"/>
+  <path d="M30 158 Q48 150 72 150 L212 150 L212 172 L172 172 Q152 178 154 196 L162 208 L186 212 L186 228 L70 228 L70 212 L94 208 L102 196 Q104 178 84 172 L72 172 Q46 170 30 158 Z" fill="url(#steel)" stroke="#0b0912" stroke-width="2"/>
+  <rect x="72" y="150" width="140" height="5" fill="#ff8a5c" opacity="0.85"/>
+  <circle cx="150" cy="141" r="3" fill="#ffb15c"/>
+  <circle cx="104" cy="137" r="2.2" fill="#ffd27a"/>
+  <circle cx="170" cy="132" r="1.8" fill="#ff7a5c"/>
+</svg>

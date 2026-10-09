@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; img-src 'self' data: blob:; style-src 'self' 'unsafe-inline'; script-src 'self'">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Mondiro MagicForge</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+<div id="app">
+  <header id="topbar">
+    <div class="brand">
+      <img class="brand-icon" src="../assets/icon.png" alt="">
+      <div class="brand-text">
+        <div class="brand-title"><span class="brand-red">Mondiro</span> <span class="brand-white">MagicForge</span></div>
+        <div class="brand-sub">Node-based 2D VFX · Loop &amp; One-shot PNG flipbooks</div>
+      </div>
+    </div>
+    <div class="toolbar">
+      <button class="btn" id="btn-new" title="New graph (Ctrl+N)">New</button>
+      <button class="btn" id="btn-open" title="Open graph (Ctrl+O)">Open</button>
+      <button class="btn" id="btn-save" title="Save graph (Ctrl+S)">Save</button>
+      <div class="dropdown">
+        <button class="btn" id="btn-examples">Examples ▾</button>
+        <div class="dropdown-menu hidden" id="examples-menu"></div>
+      </div>
+      <span class="sep"></span>
+      <button class="btn icon" id="btn-undo" title="Undo (Ctrl+Z)">↶</button>
+      <button class="btn icon" id="btn-redo" title="Redo (Ctrl+Y)">↷</button>
+      <span class="sep"></span>
+      <button class="btn primary" id="btn-export" title="Export PNG sequence (Ctrl+E)">Export PNG Sequence</button>
+    </div>
+  </header>
+
+  <main id="main">
+    <aside id="library">
+      <input id="lib-search" placeholder="Search nodes…" spellcheck="false">
+      <div id="lib-list"></div>
+      <div class="lib-tip">Click to add · or drag into the graph</div>
+    </aside>
+
+    <section id="graph-area"></section>
+
+    <section id="right">
+      <div id="viewer-bar">
+        <div class="seg" id="view-mode">
+          <button data-v="selected" class="on">Selected</button>
+          <button data-v="output">Output</button>
+        </div>
+        <select id="bg-mode" title="Preview background">
+          <option value="0">Checker</option>
+          <option value="1">Black</option>
+          <option value="2">Grey</option>
+          <option value="3">Additive (dark)</option>
+        </select>
+        <span id="view-label"></span>
+      </div>
+      <div id="viewer"><canvas id="view-canvas"></canvas></div>
+
+      <div id="timeline">
+        <div class="tl-row">
+          <button class="btn icon" id="btn-prev" title="Previous frame (←)">⏮</button>
+          <button class="btn icon play" id="btn-play" title="Play / Pause (Space)">▶</button>
+          <button class="btn icon" id="btn-next" title="Next frame (→)">⏭</button>
+          <input type="range" id="frame-slider" min="0" max="29" value="0">
+          <span id="frame-label">1 / 30</span>
+        </div>
+        <div class="tl-row settings">
+          <label>Mode
+            <select id="set-mode">
+              <option value="loop">Loop</option>
+              <option value="oneshot">One-shot</option>
+            </select>
+          </label>
+          <label>Frames <input type="number" id="set-frames" min="1" max="600" value="30"></label>
+          <label>FPS <input type="number" id="set-fps" min="1" max="120" value="30"></label>
+        </div>
+        <div class="tl-row settings">
+          <label>Size
+            <input type="number" id="set-w" min="8" max="4096" value="512"> ×
+            <input type="number" id="set-h" min="8" max="4096" value="512">
+          </label>
+          <select id="size-preset" title="Size presets">
+            <option value="">Presets</option>
+            <option>64</option><option>128</option><option>256</option><option>512</option><option>1024</option><option>2048</option>
+          </select>
+          <label>Preview
+            <select id="set-preview" title="Preview resolution (export always uses full size)">
+              <option value="256">Low</option>
+              <option value="512" selected>Medium</option>
+              <option value="1024">High</option>
+            </select>
+          </label>
+        </div>
+        <div class="tl-hint" id="mode-hint"></div>
+      </div>
+
+      <div id="props"></div>
+    </section>
+  </main>
+
+  <footer id="statusbar">
+    <span id="status">Ready</span>
+    <span class="credit">Created by Mondiro</span>
+  </footer>
+</div>
+
+<div id="export-modal" class="modal hidden">
+  <div class="modal-box">
+    <div class="modal-title">Export PNG Sequence</div>
+    <div class="form">
+      <label>File name prefix <input id="ex-name" value="fx" spellcheck="false"></label>
+      <label id="ex-folder-row">Folder
+        <div class="row"><input id="ex-folder" readonly placeholder="Choose a folder…"><button class="btn small" id="ex-browse">Browse…</button></div>
+      </label>
+      <div class="row2">
+        <label>Start number <input type="number" id="ex-start" value="0" min="0"></label>
+        <label>Digits <input type="number" id="ex-digits" value="4" min="1" max="8"></label>
+      </div>
+      <div class="ex-info" id="ex-info"></div>
+      <div class="ex-progress hidden" id="ex-progress"><div class="bar"></div><span></span></div>
+    </div>
+    <div class="modal-actions">
+      <button class="btn" id="ex-cancel">Close</button>
+      <button class="btn hidden" id="ex-open">Open Folder</button>
+      <button class="btn primary" id="ex-go">Export</button>
+    </div>
+  </div>
+</div>
+
+<input type="file" id="file-open" accept=".magicforge,.json" hidden>
+<script type="module" src="js/app.js"></script>
+</body>
+</html>

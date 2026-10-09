@@ -1,0 +1,20 @@
+{
+  "name": "mondiro-magicforge",
+  "productName": "Mondiro MagicForge",
+  "version": "1.0.0",
+  "description": "Node-based 2D VFX generator that exports loopable / one-shot PNG flipbook sequences.",
+  "author": "Mondiro",
+  "license": "UNLICENSED",
+  "private": true,
+  "main": "main.js",
+  "scripts": {
+    "start": "electron .",
+    "icon": "node build/make-icon.mjs",
+    "pack:win": "node build/package-win.mjs"
+  },
+  "devDependencies": {
+    "@electron/packager": "20.3.0",
+    "electron": "44.4.5",
+    "resedit": "3.0.2"
+  }
+}

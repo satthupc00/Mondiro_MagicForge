@@ -10,11 +10,59 @@
   "scripts": {
     "start": "electron .",
     "icon": "node build/make-icon.mjs",
-    "pack:win": "node build/package-win.mjs"
+    "pack:win": "electron-builder --win --x64 --publish never"
   },
   "devDependencies": {
-    "@electron/packager": "20.3.0",
     "electron": "44.4.5",
-    "resedit": "3.0.2"
+    "electron-builder": "26.15.3"
+  },
+  "dependencies": {
+    "electron-updater": "6.8.9"
+  },
+  "build": {
+    "appId": "com.mondiro.magicforge",
+    "productName": "Mondiro MagicForge",
+    "copyright": "Created by Mondiro",
+    "directories": {
+      "output": "dist"
+    },
+    "files": [
+      "main.js",
+      "preload.js",
+      "updater.js",
+      "package.json",
+      "src/**/*",
+      "assets/**/*"
+    ],
+    "win": {
+      "target": [
+        {
+          "target": "nsis",
+          "arch": [
+            "x64"
+          ]
+        }
+      ],
+      "icon": "assets/icon.ico",
+      "executableName": "Mondiro MagicForge"
+    },
+    "nsis": {
+      "oneClick": true,
+      "perMachine": false,
+      "createDesktopShortcut": true,
+      "createStartMenuShortcut": true,
+      "shortcutName": "Mondiro MagicForge",
+      "artifactName": "MondiroMagicForge-Setup-${version}.exe",
+      "installerIcon": "assets/icon.ico",
+      "uninstallerIcon": "assets/icon.ico"
+    },
+    "publish": [
+      {
+        "provider": "github",
+        "owner": "satthupc00",
+        "repo": "Mondiro_MagicForge",
+        "releaseType": "release"
+      }
+    ]
   }
 }

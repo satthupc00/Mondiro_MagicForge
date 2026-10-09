@@ -5,10 +5,12 @@
 ![Preview](docs/preview.png)
 ![Examples](docs/examples.png)
 
-## Chạy app
-- **Bản build sẵn:** giải nén `MondiroMagicForge-x.y.z-win-x64.zip` rồi chạy `Mondiro MagicForge.exe`, không cần cài đặt.
-- **Từ source:** cài [Node.js](https://nodejs.org), rồi chạy `npm install` và `npm start`.
-- **Tự build bản Windows:** chạy `npm run pack:win`, kết quả nằm trong thư mục `dist/`.
+## Cài đặt & tự cập nhật
+- Vào trang [Releases](https://github.com/satthupc00/Mondiro_MagicForge/releases/latest), tải `MondiroMagicForge-Setup-x.y.z.exe` rồi chạy. App tự cài vào máy, không cần quyền admin, và tạo shortcut ngoài Desktop.
+- **Tự cập nhật:** mỗi lần mở app (và cứ mỗi 2 tiếng), app kiểm tra xem có bản build mới không rồi tự tải về ở chế độ nền. Tải xong, góc dưới bên phải hiện nút **Restart to update**. Nếu không bấm, bản mới sẽ tự cài khi bạn tắt app.
+- Bấm vào số phiên bản (ví dụ `v1.0.5`) ở thanh dưới cùng để kiểm tra cập nhật ngay.
+- **Từ source:** cài [Node.js](https://nodejs.org), chạy `npm install` rồi `npm start`.
+- Mỗi lần push code, GitHub Actions tự build bộ cài Windows, tăng số phiên bản và đăng lên Releases.
 
 ## Cách dùng nhanh
 1. Kéo node từ thư viện bên trái, hoặc **chuột phải / double-click / Tab** trong graph để thêm node.

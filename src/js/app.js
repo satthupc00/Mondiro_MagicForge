@@ -519,6 +519,45 @@ window.addEventListener('beforeunload', (e) => {
   if (state.dirty && !api) { e.preventDefault(); e.returnValue = ''; }
 });
 
+// ---------------------------------------------------------------- auto update
+function setupUpdates() {
+  const ver = $('#app-version');
+  const info = $('#update-info');
+  const btn = $('#btn-update');
+  if (!api?.getVersion) { ver.textContent = 'web preview'; return; }
+  api.getVersion().then(v => { ver.textContent = `v${v}`; });
+  let manual = false;
+  ver.onclick = () => { manual = true; api.checkUpdate(); };
+  let pending = '';
+  api.onUpdateStatus((s) => {
+    info.classList.remove('hidden', 'ok');
+    if (s.state === 'checking') {
+      info.textContent = manual ? 'Checking for updates…' : '';
+    } else if (s.state === 'latest') {
+      info.textContent = manual ? 'You have the latest version' : '';
+      info.classList.add('ok');
+      manual = false;
+    } else if (s.state === 'downloading') {
+      if (s.version) pending = s.version;
+      info.textContent = `Downloading update${pending ? ' v' + pending : ''}… ${s.percent || 0}%`;
+    } else if (s.state === 'ready') {
+      info.textContent = `Update v${s.version} ready`;
+      info.classList.add('ok');
+      btn.classList.remove('hidden');
+    } else if (s.state === 'error') {
+      info.textContent = manual ? 'Update check failed' : '';
+      info.title = s.message || '';
+      manual = false;
+    }
+    if (!info.textContent) info.classList.add('hidden');
+  });
+  btn.onclick = () => {
+    if (state.dirty && !confirm('Restart now? Unsaved changes to the graph will be lost.\n(Save first with Ctrl+S, or the update installs automatically when you close the app.)')) return;
+    api.installUpdate();
+  };
+}
+setupUpdates();
+
 // ---------------------------------------------------------------- start
 buildLibrary();
 setPlaying(true);

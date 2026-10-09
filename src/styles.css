@@ -166,6 +166,12 @@ input[type=color] { width: 40px; height: 22px; padding: 0; border: 1px solid var
 #status.error { color: #ff7b84; }
 #status.ok { color: #7be0a4; }
 .credit { color: #9a9ca8; }
+.status-right { display: flex; align-items: center; gap: 12px; }
+#app-version { cursor: pointer; }
+#app-version:hover { color: var(--text); }
+#update-info { color: #ffd27a; }
+#update-info.ok { color: #7be0a4; }
+#btn-update { padding: 0 8px; height: 18px; font-size: 10.5px; }
 
 /* ---------- modal ---------- */
 .modal { position: fixed; inset: 0; background: #000a; display: flex; align-items: center; justify-content: center; z-index: 100; }

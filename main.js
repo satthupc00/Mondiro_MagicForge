@@ -2,6 +2,7 @@
 const { app, BrowserWindow, ipcMain, dialog, shell, Menu } = require('electron');
 const path = require('path');
 const fs = require('fs');
+const { initUpdater } = require('./updater');
 
 // The node previews need WebGL2; don't let an old driver blocklist turn it off.
 app.commandLine.appendSwitch('ignore-gpu-blocklist');
@@ -26,6 +27,7 @@ function createWindow() {
   });
   Menu.setApplicationMenu(null);
   win.loadFile(path.join(__dirname, 'src', 'index.html'));
+  initUpdater(win);
   win.webContents.on('before-input-event', (e, input) => {
     if (input.type === 'keyDown' && input.key === 'F12') win.webContents.toggleDevTools();
   });

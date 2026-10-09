@@ -3,8 +3,9 @@
 import { chromium } from 'playwright';
 import fs from 'node:fs';
 import path from 'node:path';
+import { fileURLToPath } from 'node:url';
 
-const root = path.resolve(path.dirname(new URL(import.meta.url).pathname), '..');
+const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const svg = fs.readFileSync(path.join(root, 'assets', 'icon.svg'), 'utf8');
 const sizes = [16, 24, 32, 48, 64, 128, 256];
 

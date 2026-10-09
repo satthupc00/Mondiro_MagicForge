@@ -6,6 +6,7 @@ import { NodeEditor, NODE_W } from './editor.js';
 import { PropsPanel } from './props.js';
 import { encodePNG, ZipWriter } from './encode.js';
 import { EXAMPLES, DEFAULT_EXAMPLE } from './examples.js';
+import { TransformGizmo } from './gizmo.js';
 
 const api = window.mforge || null; // Electron bridge (null when running in a browser)
 const $ = (s) => document.querySelector(s);
@@ -62,6 +63,7 @@ const editor = new NodeEditor($('#graph-area'), {
   onSelect(id) {
     state.selected = id;
     props.show(id ? state.graph.nodes.get(id) : null);
+    gizmo.setNode(id ? state.graph.nodes.get(id) : null);
     if (state.viewMode === 'selected' && id) state.viewNode = id;
     requestRender();
   },
@@ -84,20 +86,8 @@ const props = new PropsPanel($('#props'), {
     requestRender();
   },
   async onImage(id, key, file) {
-    const dataUrl = await new Promise((res, rej) => {
-      const r = new FileReader();
-      r.onload = () => res(r.result);
-      r.onerror = rej;
-      r.readAsDataURL(file);
-    });
-    const assetId = 'img_' + Date.now().toString(36);
-    state.graph.assets[assetId] = dataUrl;
-    try {
-      await engine.loadImage(assetId, dataUrl);
-    } catch {
-      status('Could not read that image.', 'error');
-      return;
-    }
+    const assetId = await loadImageFile(file);
+    if (!assetId) return;
     state.graph.nodes.get(id).params[key] = assetId;
     props.show(state.graph.nodes.get(id));
     commit();
@@ -111,6 +101,25 @@ const props = new PropsPanel($('#props'), {
     requestRender();
   },
 });
+
+// Read an image file into the graph's assets. Returns the asset id, or null.
+async function loadImageFile(file) {
+  try {
+    const dataUrl = await new Promise((res, rej) => {
+      const r = new FileReader();
+      r.onload = () => res(r.result);
+      r.onerror = rej;
+      r.readAsDataURL(file);
+    });
+    const assetId = 'img_' + Date.now().toString(36) + Math.random().toString(36).slice(2, 6);
+    await engine.loadImage(assetId, dataUrl);
+    state.graph.assets[assetId] = dataUrl;
+    return assetId;
+  } catch {
+    status(`Could not read image: ${file.name}`, 'error');
+    return null;
+  }
+}
 
 function commit() {
   history.push(state.graph.snapshot());
@@ -159,6 +168,7 @@ async function loadGraphData(data, fileName, filePath = null) {
   syncSettingsUI();
   editor.setGraph(g);
   props.show(null);
+  gizmo.setNode(null);
   requestAnimationFrame(() => editor.frameAll());
   history.reset(g.snapshot());
   state.dirty = false;
@@ -402,6 +412,7 @@ function renderPreview(now) {
   const want = state.lockNode || state.viewNode;
   const vid = state.graph.nodes.has(want) ? want : 'output';
   engine.display(vid, state.bg);
+  gizmo.update();
   const vn = state.graph.nodes.get(vid);
   $('#view-label').textContent = `${state.lockNode === vid ? 'Locked: ' : ''}${NODE_TYPES[vn.type].name} · ${state.settings.width}×${state.settings.height}${w !== state.settings.width ? ` (preview ${w}×${h})` : ''}`;
   if (now - lastThumbs > 120 || !state.playing) {
@@ -585,6 +596,63 @@ function setupUpdates() {
   };
 }
 setupUpdates();
+
+// ---------------------------------------------------------------- transform gizmo
+const gizmo = new TransformGizmo($('#viewer'), {
+  getRect: () => engine.viewRect,
+  getAspect: () => {
+    const { width: w, height: h } = state.settings;
+    return w > h ? [0.5 * w / h, 0.5] : [0.5, 0.5 * h / w];
+  },
+  getPhase: () => phaseOf(state.frame),
+  onChange(isCommit) {
+    if (isCommit) {
+      props.show(gizmo.node);
+      commit();
+    }
+    requestRender();
+  },
+});
+
+// ---------------------------------------------------------------- drop image files
+const dropHint = document.createElement('div');
+dropHint.className = 'drop-hint hidden';
+dropHint.textContent = 'Drop images to create Image Input nodes';
+document.body.appendChild(dropHint);
+const hasFiles = (e) => [...(e.dataTransfer?.types || [])].includes('Files');
+document.addEventListener('dragover', (e) => {
+  if (!hasFiles(e)) return;
+  e.preventDefault();
+  e.dataTransfer.dropEffect = 'copy';
+  dropHint.classList.remove('hidden');
+});
+document.addEventListener('dragleave', (e) => {
+  if (!e.relatedTarget) dropHint.classList.add('hidden');
+});
+document.addEventListener('drop', async (e) => {
+  if (!hasFiles(e)) return;
+  e.preventDefault();
+  dropHint.classList.add('hidden');
+  const files = [...e.dataTransfer.files].filter(f => /^image\//.test(f.type) || /\.(png|jpe?g|webp|gif|bmp)$/i.test(f.name));
+  if (!files.length) { status('Only image files can be dropped here.', 'error'); return; }
+  const r = $('#graph-area').getBoundingClientRect();
+  const inGraph = e.clientX > r.left && e.clientX < r.right && e.clientY > r.top && e.clientY < r.bottom;
+  const base = inGraph ? editor.toLayer(e.clientX, e.clientY) : editor.viewCenter();
+  const ids = [];
+  for (const [i, f] of files.entries()) {
+    const assetId = await loadImageFile(f);
+    if (!assetId) continue;
+    const n = editor.addNode('image', base.x - NODE_W / 2 + i * 30, base.y - 40 + i * 30);
+    n.params.image = assetId;
+    ids.push(n.id);
+  }
+  if (!ids.length) return;
+  editor.drawWires();
+  editor.select(ids, ids[ids.length - 1]);
+  commit();
+  requestRender();
+  status(`Added ${ids.length} Image Input node${ids.length > 1 ? 's' : ''}.`, 'ok');
+});
 
 // ---------------------------------------------------------------- start
 buildLibrary();

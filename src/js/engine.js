@@ -270,9 +270,11 @@ export class Engine {
     gl.bindFramebuffer(gl.FRAMEBUFFER, null);
     gl.viewport(0, 0, cw, ch);
     if (!t) { gl.clearColor(0.085, 0.09, 0.105, 1); gl.clear(gl.COLOR_BUFFER_BIT); return; }
-    const pad = 12;
+    const pad = 22 * (window.devicePixelRatio || 1);
     const s = Math.min((cw - pad * 2) / t.w, (ch - pad * 2) / t.h);
     const iw = t.w * s, ih = t.h * s;
+    // Where the image sits on the canvas (device pixels), used by the viewer gizmos.
+    this.viewRect = { x: (cw - iw) / 2, y: (ch - ih) / 2, w: iw, h: ih };
     this._drawDisplay(t.tex, [(cw - iw) / 2 / cw, (ch - ih) / 2 / ch, iw / cw, ih / ch], cw, ch, bgMode, false, 10);
   }
 

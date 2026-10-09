@@ -16,6 +16,9 @@
 1. Kéo node từ thư viện bên trái, hoặc **chuột phải / double-click / Tab** trong graph để thêm node.
 2. Kéo dây từ chấm **output** (bên phải node) vào chấm **input** (bên trái node). Kéo dây ra chỗ trống thì app mở menu để thêm node mới và tự nối luôn.
 3. Chọn node để chỉnh thông số ở panel bên phải. **Double-click** vào node để xem node đó trong khung 2D.
+- **Transform trên preview:** chọn node Transform thì preview hiện khung vàng. Kéo bên trong khung để di chuyển, kéo 4 góc để scale đều, kéo 4 cạnh để scale riêng X/Y, kéo núm tròn hoặc kéo ra ngoài khung để xoay (giữ Shift để xoay theo bước 15°). Nếu Transform có Animate, khung sẽ chỉnh giá trị Start hoặc End, tùy frame hiện tại gần bên nào hơn.
+- **Kéo thả ảnh** (PNG/JPG/WebP) từ máy vào app: app tự tạo node Image Input có sẵn hình. Thả vào graph thì node nằm đúng chỗ thả.
+- **Khóa preview** (nút ổ khóa hoặc phím L): giữ khung preview ở một node trong lúc chỉnh node khác.
 4. Chỉnh **Mode** (Loop / One-shot), **Frames**, **FPS** và **Size** (mặc định 512×512, gõ được size tự do).
 5. Bấm **Export PNG Sequence**, chọn thư mục. File được đặt tên `prefix_0000.png`, `prefix_0001.png`…
 
